@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, ReactNode } from 'react'
+import { useRef, ReactNode, FormEvent } from 'react'
 
 interface formProps {
   children: ReactNode
@@ -10,17 +10,19 @@ interface formProps {
 }
 
 const Form = ({ children, action, className, onSubmit }: formProps) => {
-  const ref = useRef<HTMLFormElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault() // Prevent default form submission behavior
+
+    const formData = new FormData(event.currentTarget) // Get form data
+    await action(formData) // Call the action function with form data
+
+    formRef.current?.reset() // Reset the form
+    if (onSubmit) onSubmit() // Call onSubmit function if provided
+  }
   return (
-    <form
-      className={className}
-      onSubmit={onSubmit}
-      ref={ref}
-      action={async (formData) => {
-        await action(formData)
-        ref.current?.reset
-      }}
-    >
+    <form className={className} onSubmit={handleSubmit} ref={formRef}>
       {children}
     </form>
   )
